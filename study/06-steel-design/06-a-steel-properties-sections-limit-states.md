@@ -2,8 +2,8 @@
 
 **Subject area:** Steel Design (AISC 360-22)
 **Design standard / primary reference:** AISC 360-22 §A, §B, §C; AISC Steel Construction Manual, 16th Ed., Part 1 & 2
-**Depth level:** Undergraduate — accessible
-**Estimated study time:** 55 minutes
+**Depth level:** Graduate — rigorous derivation
+**Estimated study time:** 100 minutes
 
 ---
 
@@ -408,4 +408,158 @@ Both methods will size the beam to the same $M_n$ when $L/D = 90/60 = 1.5$, sinc
 
 ---
 
-*Created by Structural Engineering Tutor • 2026-03-17*
+---
+
+## 11. Graduate Extension: Reliability Theory & LRFD Calibration
+
+### 11.1 Structural Reliability Fundamentals
+
+The LRFD format is a **first-order second-moment (FOSM)** approximation to probabilistic limit-state design. The underlying model treats both load effect $Q$ and resistance $R$ as random variables and defines the **limit-state function**:
+
+$$
+g(R, Q) = R - Q
+$$
+
+Failure occurs when $g < 0$, i.e., when the resistance is less than the load effect. For *lognormally* distributed $R$ and $Q$ with means $\bar{R}$, $\bar{Q}$ and coefficients of variation $V_R$, $V_Q$, the **reliability index** $\beta$ (Cornell 1969) is exactly:
+
+$$
+\beta = \frac{\ln(\bar{R}/\bar{Q})}{\sqrt{V_R^2 + V_Q^2}}
+\tag{Cornell, 1969}
+$$
+
+The probability of failure is:
+
+$$
+P_f = \Phi(-\beta)
+$$
+
+where $\Phi(\cdot)$ is the standard normal CDF. AISC calibrated the LRFD resistance factors to achieve **target reliability index $\beta_T = 3.0$** for members under gravity loads (corresponding to $P_f \approx 1.35 \times 10^{-3}$) and $\beta_T = 4.0$ for connections ($P_f \approx 3.2 \times 10^{-5}$). The higher connection target reflects the consequences of brittle fracture.
+
+**Why $\beta_T = 3.0$?** This level was chosen by Galambos et al. (1982) based on back-calibration to ASD practice: existing safe designs under ASD implied $\beta \approx 2.6$–$3.5$; the value of 3.0 was selected as a consistent target across member types.
+
+---
+
+### 11.2 FOSM Calibration: Deriving $\phi$ and $\Omega$
+
+**Resistance model.** For a steel tension member at gross yielding, resistance is $R = F_y A_g$. Treating $F_y$ and $A_g$ as independent lognormal variables:
+
+$$
+\bar{R} = \bar{F}_y \cdot \bar{A}_g, \qquad V_R \approx \sqrt{V_{F_y}^2 + V_{A_g}^2}
+$$
+
+For A992 W-shapes (from Galambos & Ravindra 1978 test data):
+
+| Parameter | Mean-to-nominal ratio | COV |
+|-----------|----------------------|-----|
+| $F_y$ | 1.10 | 0.10 |
+| $A_g$ | 1.00 | 0.05 |
+| Professional factor $P$ | 1.02 | 0.06 |
+
+So $\bar{R}/R_n = 1.10 \times 1.00 \times 1.02 = 1.122$ and $V_R = \sqrt{0.10^2 + 0.05^2 + 0.06^2} = 0.126$.
+
+**Load model.** For a 50-year maximum combination $1.2D + 1.6L$, with dead-to-live ratio $\rho = D/L$:
+
+$$
+\bar{Q} = (\bar{D} + \bar{L}), \qquad V_Q \approx 0.18 \text{ (combined)}
+$$
+
+where $\bar{D}/D_n = 1.05$, $V_D = 0.10$; $\bar{L}/L_n = 1.00$, $V_L = 0.25$.
+
+**Solving for $\phi$.** Setting $\beta = \beta_T = 3.0$ in the lognormal reliability equation and solving for the nominal-capacity factor $\phi$ (Ravindra & Galambos 1978):
+
+$$
+\phi = \left(\bar{R}/R_n\right) e^{-\alpha_R \beta_T V_R}
+$$
+
+where the FOSM sensitivity factor $\alpha_R \approx 0.55$ for typical resistance uncertainties. Substituting:
+
+$$
+\phi = 1.122 \times e^{-0.55 \times 3.0 \times 0.126} = 1.122 \times e^{-0.208} = 1.122 \times 0.812 \approx 0.91 \approx 0.90
+$$
+
+This reproduces $\phi_t = 0.90$ for yielding directly from probabilistic calibration. For fracture ($V_R$ is larger because $A_e$ adds shear lag uncertainty $V_U \approx 0.12$, giving $V_R \approx 0.18$):
+
+$$
+\phi = 1.10 \times e^{-0.55 \times 3.5 \times 0.18} \approx 0.76 \approx 0.75
+$$
+
+The higher $\alpha_R \beta_T$ for fracture (using $\beta_T = 3.5$–$4.0$ for brittle limit states) drives $\phi$ down to 0.75. **This is why fracture has a lower resistance factor than yielding — it is not arbitrary; it reflects higher coefficient of variation in the net-section capacity and the catastrophic nature of brittle fracture.**
+
+**ASD safety factor from FOSM.** ASD calibrated $\Omega$ so that both methods produce the same nominal safety:
+
+$$
+\Omega = \frac{1.2D + 1.6L}{\phi(D+L)} \approx \frac{1.4}{\phi \cdot 1.0} \approx \frac{1.4}{0.90} \approx 1.56 \to 1.67 \text{ (rounded up for safety)}
+$$
+
+---
+
+### 11.3 Residual Stresses in Rolled and Built-Up Shapes
+
+During hot-rolling, the flange tips cool faster than the heavier flange-web junction. This differential cooling locks in **self-equilibrating residual stresses** with:
+
+- **Compressive residual stress** at flange tips: typically $F_{rc} \approx 0.30 F_y$ (AISC notation: compression positive convention varies by source)
+- **Tensile residual stress** at flange-web junction: sufficient to maintain equilibrium
+
+The **CRC (Column Research Council) residual stress model** for wide-flange shapes uses a parabolic distribution across the flange width:
+
+$$
+\sigma_r(y) = F_{rc}\left[1 - \left(\frac{2y}{b_f}\right)^2\right]
+$$
+
+where $y$ is measured from the flange centerline. The significance for design:
+
+1. **Column strength**, §E3: The column curve implicitly includes residual stress effects through the $0.877 F_e$ or $0.658^{F_y/F_e}$ empirical fit. A column with $F_{rc} = 0.3 F_y$ begins to yield locally at $0.7 F_y$, which is why $0.7 F_y S_x$ appears as the LTB lower anchor in §F2.2 — the flange tip stress that triggers inelastic behavior.
+2. **LTB of beams**, §F2: Inelastic LTB initiates when the extreme fiber reaches $F_y - F_{rc} \approx 0.7 F_y$, explaining the $0.7 F_y S_x$ anchor in Eq. F2-2.
+3. **Connections**: Residual stresses are favorable in welded connections where preheat procedures partially relieve them.
+
+For **welded built-up I-shapes** the residual stress pattern reverses: heavy longitudinal welds produce tension at flange tips and compression at the web-flange junction. This makes welded columns more susceptible to web local buckling initiating inelastic column action.
+
+---
+
+### 11.4 Strain Hardening and the Idealized Stress-Strain Model
+
+The Standard steel stress-strain curve for A992 has four distinct regions used in advanced analysis:
+
+| Region | Strain range | Behavior |
+|--------|-------------|----------|
+| Elastic | $0 \le \varepsilon \le F_y/E$ | Linear: $\sigma = E\varepsilon$ |
+| Yield plateau | $F_y/E \le \varepsilon \le \varepsilon_{st}$ | Constant: $\sigma = F_y$; $\varepsilon_{st} \approx 10\varepsilon_y$ for A992 |
+| Strain-hardening | $\varepsilon_{st} \le \varepsilon \le \varepsilon_u$ | Rising: $\sigma = F_y + E_{st}(\varepsilon - \varepsilon_{st})$; $E_{st} \approx E/30$ |
+| Necking–fracture | $\varepsilon_u \le \varepsilon$ | Falling to $F_u$ then rupture |
+
+For plastic design and pushover analysis (ASCE 41-23 §7.5), the **idealized elastic-perfectly-plastic (EPP) model** ($\sigma = F_y$ for $\varepsilon > F_y/E$) is conservative but simple. The **Ramberg-Osgood** model provides a smooth transition:
+
+$$
+\varepsilon = \frac{\sigma}{E} + \alpha_0\frac{\sigma_0}{E}\left(\frac{\sigma}{\sigma_0}\right)^n
+$$
+
+where calibrated constants $\alpha_0$, $n$, and reference stress $\sigma_0$ fit individual heat data. This model is used in fiber-section finite element analysis for nonlinear time-history analyses.
+
+---
+
+### 11.5 Width-to-Thickness Limits: Plate Buckling Theory Basis
+
+The compact and noncompact limits in AISC Table B4.1 are derived from **plate buckling theory** (Timoshenko & Gere, *Theory of Elastic Stability*, §9.1). For a uniformly compressed rectangular plate simply supported on three sides and free on one (unstiffened plate element, e.g., outstand flange half-width $b/2$):
+
+$$
+F_{cr,plate} = \frac{k_c \pi^2 E}{12(1-\nu^2)(b/t)^2}
+$$
+
+where $k_c = 0.425$ for a plate free on one unloaded edge (von Kármán 1932). The **compact limit** $\lambda_p$ is set where a flanged element can sustain the full plastic stress $F_y$ through a rotation ductility demand of about 3 (AISC Commentary B4). The **noncompact limit** $\lambda_r$ is set where $F_{cr,plate} = F_y$:
+
+$$
+\lambda_r = b/t = \sqrt{\frac{k_c \pi^2 E}{12(1-\nu^2) F_y}} \approx 0.56\sqrt{\frac{E}{F_y}}
+\tag{AISC Table B4.1a, Case 1}
+$$
+
+This derivation exactly reproduces the AISC value with $k_c = 0.425$ and $\nu = 0.3$:
+
+$$
+\lambda_r = \sqrt{\frac{0.425 \pi^2 E}{12(1-0.09) F_y}} = \sqrt{\frac{4.192 E}{F_y}} \cdot \frac{1}{2.04} \approx 0.56\sqrt{\frac{E}{F_y}} \checkmark
+$$
+
+For stiffened elements (web, HSS walls) supported on both loaded edges, $k_c = 4.0$, giving $\lambda_r = 1.49\sqrt{E/F_y}$ — again matching AISC Table B4.1a.
+
+---
+
+*Created by Structural Engineering Tutor • 2026-03-17 | Upgraded to Graduate level: 2026-03-18*

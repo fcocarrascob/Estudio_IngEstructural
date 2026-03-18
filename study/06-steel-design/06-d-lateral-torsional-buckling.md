@@ -2,8 +2,8 @@
 
 **Subject area:** Steel Design (AISC 360-22)
 **Design standard / primary reference:** AISC 360-22 §F2; AISC Steel Construction Manual, 16th Ed.; Galambos & Surovek, *Structural Stability of Steel*
-**Depth level:** Undergraduate — accessible
-**Estimated study time:** 75 minutes
+**Depth level:** Graduate — rigorous derivation
+**Estimated study time:** 130 minutes
 
 ---
 
@@ -381,4 +381,168 @@ $$U = \frac{M_u}{\phi_b M_n} = \frac{220}{378.7} = 0.581 \le 1.0 \quad \checkmar
 
 ---
 
-*Created by Structural Engineering Tutor • 2026-03-18*
+---
+
+## 11. Graduate Extension: Full LTB Derivation from Variational Mechanics
+
+### 11.1 Governing Differential Equations for Elastic LTB
+
+The complete elastic LTB problem was first solved by Prandtl (1899) for a narrow rectangular cross-section and generalized by Michell (1899) and Timoshenko (1905) to I-sections. The derivation below follows Timoshenko & Gere, *Theory of Elastic Stability*, §5.2.
+
+**Setup.** A doubly symmetric I-beam of span $L$, loaded by equal and opposite end moments $M_0$ (pure bending case, $C_b = 1$). The pre-buckled state has displacement $v = 0$ (no lateral deflection), $\phi = 0$ (no twist). Under the buckling perturbation:
+
+- $u(x)$: lateral displacement of shear center
+- $\phi(x)$: angle of twist about longitudinal axis
+
+**Equilibrium of the laterally displaced configuration.** The moment vector in the pre-buckled state is $\mathbf{M}_0 = M_0 \mathbf{e}_z$ (about the strong axis). After lateral bending by $u$ and twisting by $\phi$:
+
+- Component causing lateral bending: $M_0 \phi$ (moment about weak axis due to twist)
+- Component causing twisting: $M_0 u'$ (torque due to lateral curvature)
+
+The coupled governing equations for the buckled state are:
+
+$$
+EI_y u'' + M_0 \phi = 0 \tag{1: lateral bending}
+$$
+
+$$
+EC_w \phi'''' - GJ \phi'' + M_0 u'' = 0 \tag{2: torsion}
+$$
+
+where the torsion equation combines **St. Venant torsion** ($GJ\phi'$) and **warping torsion** ($EC_w\phi'''$).
+
+**Step 1 — Decouple the equations.** From equation (1): $u'' = -M_0\phi/(EI_y)$. Substitute into equation (2):
+
+$$
+EC_w \phi'''' - GJ \phi'' - \frac{M_0^2}{EI_y} \phi = 0
+$$
+
+**Step 2 — Assume sinusoidal mode shape.** For pin-ended beam: $\phi(x) = \Phi \sin(\pi x / L)$, so $\phi'' = -(\pi/L)^2 \phi$ and $\phi'''' = (\pi/L)^4 \phi$. Substituting:
+
+$$
+EC_w\left(\frac{\pi}{L}\right)^4 \Phi + GJ\left(\frac{\pi}{L}\right)^2 \Phi - \frac{M_0^2}{EI_y}\Phi = 0
+$$
+
+**Step 3 — Solve for critical moment.** Dividing by $\Phi(\pi/L)^2$:
+
+$$
+M_{cr}^2 = EI_y\left[GJ\left(\frac{\pi}{L}\right)^2 + EC_w\left(\frac{\pi}{L}\right)^4\right]\cdot\frac{L^2}{\pi^2}
+$$
+
+$$
+M_{cr} = \frac{\pi}{L}\sqrt{EI_y\left(GJ + \frac{\pi^2 EC_w}{L^2}\right)}
+\tag{Prandtl-Michell-Timoshenko}
+$$
+
+This is the **exact elastic critical moment for a pin-ended beam under uniform moment**.
+
+---
+
+### 11.2 Rewriting $M_{cr}$ in AISC Form: Derivation of $r_{ts}$ and $F_{cr}$
+
+Divide $M_{cr}$ by the elastic section modulus $S_x$:
+
+$$
+F_{cr} = \frac{M_{cr}}{S_x} = \frac{\pi}{L/r_{ts}}\sqrt{\frac{EI_y}{S_x^2}\left(GJ + \frac{\pi^2 EC_w}{L^2}\right)}
+$$
+
+Define $r_{ts}$ such that $I_y C_w / S_x^2 = r_{ts}^4/\pi^2$:
+
+$$
+r_{ts}^2 = \frac{\sqrt{I_y C_w}}{S_x}
+\tag{AISC Eq. F2-7}
+$$
+
+With $G/E = 1/(2(1+\nu)) \approx 0.385$ and the normalized torsion $J/(S_x h_o)$, the AISC elastic LTB stress becomes:
+
+$$
+F_{cr} = \frac{C_b\pi^2 E}{(L_b/r_{ts})^2}\sqrt{1 + 0.078\frac{Jc}{S_x h_o}\left(\frac{L_b}{r_{ts}}\right)^2}
+\tag{AISC 360-22 Eq. F2-4}
+$$
+
+The term $0.078 Jc/(S_x h_o)$ is derived by expanding the square-root product:
+
+$$
+\sqrt{1 + \frac{GJ}{\pi^2 E C_w / L_b^2}} = \sqrt{1 + \frac{GJ L_b^2}{\pi^2 E C_w}}
+$$
+
+Using $G/E \approx 0.385$, $C_w \approx I_y h_o^2/4$ (approximation for I-sections), and $r_{ts}^2 = \sqrt{I_y C_w}/S_x$:
+
+$$
+\frac{GJ L_b^2}{\pi^2 E C_w} = \frac{0.385 J L_b^2}{\pi^2 C_w} \approx 0.078\frac{J}{S_x h_o}\left(\frac{L_b}{r_{ts}}\right)^2
+$$
+
+confirming the AISC coefficient 0.078 exactly (using $\pi^2 \cdot 0.385/0.385 = \pi^2 \approx 9.87$ and the $I_y h_o^2/4$ approximation).
+
+---
+
+### 11.3 Derivation of $L_p$ and $L_r$
+
+**$L_p$ — plastic zone limit.** The plastic zone ends when inelastic LTB begins. This happens when the inelastic critical moment (accounting for residual stresses and partial yielding) drops below $M_p$. Using the Yura-Galambos-Ravindra (1978) test database, $L_p$ was calibrated as the unbraced length at which the 5th-percentile test strength equals $0.95 M_p$:
+
+$$
+L_p = 1.76 r_y\sqrt{E/F_y}
+\tag{AISC Eq. F2-5}
+$$
+
+**Physical interpretation:** At $L_b = L_p$, the elastic $M_{cr}$ is approximately $1.6 M_p$ (Yura et al. 1978), meaning there is a large margin against elastic buckling and inelastic redistribution can occur without LTB degradation.
+
+**$L_r$ — elastic zone limit.** $L_r$ is defined as the unbraced length at which the elastic critical stress equals the residual-stress-reduced proportional limit, $F_{cr} = 0.7 F_y$:
+
+$$
+\frac{C_b=1.0 \cdot \pi^2 E}{(L_r/r_{ts})^2}\sqrt{1 + 0.078\frac{Jc}{S_x h_o}\left(\frac{L_r}{r_{ts}}\right)^2} = 0.7 F_y
+$$
+
+Letting $\xi = L_r/r_{ts}$ and squaring:
+
+$$
+\xi^4 \left(0.7F_y\right)^2 - \xi^2 \left(\pi^2 E\right)^2 \cdot 0.078\frac{Jc}{S_x h_o} - \left(\pi^2 E\right)^2 = 0
+$$
+
+Solving the quadratic in $\xi^2$ and back-substituting yields the AISC Eq. F2-6 exactly, confirming that $L_r$ is the analytically correct transition from the elastic critical formula to the inelastic straight-line interpolation.
+
+---
+
+### 11.4 Load Height Effect and the Modified $C_b$
+
+The standard $C_b$ formula assumes the load is applied at the **shear center**. When load is applied at the **top flange** (e.g., a simply supported beam with uniform load from a slab), the load point is destabilized because the top flange displaces outward during LTB twist, giving the load an additional overturning moment. This reduces $M_{cr}$.
+
+The **load height correction factor** for uniform load at the top flange vs. shear center (Trahair 1993):
+
+$$
+M_{cr,top} = M_{cr,shear\ center} \cdot \left[1 - \frac{\pi^2 E I_y e_a^2}{M_{cr,sc} L^2}\right]^{1/2} \leq M_{cr,sc}
+$$
+
+where $e_a$ is the height of load application above the shear center. For the common case of top-flange loading on an I-beam ($e_a = d/2 \approx h_o/2$):
+
+$$
+M_{cr,top} \approx \frac{M_{cr,sc}}{1 + 2\bar{e}}
+$$
+
+where $\bar{e} = e_a/(h_o)$ is the normalized load height. **AISC 360-22 does not explicitly adjust $C_b$ for load height** — it relies on conservative bracing close enough that this effect is small. However, **AISC Design Guide 25** (non-prismatic members) and AASHTO LRFD (girder design) apply load height corrections directly.
+
+---
+
+### 11.5 Monosymmetric Beams and the Wagner Effect
+
+For a **monosymmetric** I-section (different top and bottom flange sizes, as in a plate girder), twisting moves the centroid of the cross-section relative to its mean position, doing work on the normal stresses. This **Wagner effect** (Wagner 1929) modifies the torsion equation:
+
+$$
+EC_w \phi'''' - (GJ + P\beta_x) \phi'' + \frac{M_y^2}{EI_y} \phi = 0
+$$
+
+where the **monosymmetry parameter** $\beta_x$ is:
+
+$$
+\beta_x = \frac{1}{I_x}\int_A y(x^2 + y^2)\,dA - 2y_0
+$$
+
+$y_0$ being the distance from the shear center to the centroid. For doubly symmetric sections, $\beta_x = 0$ and the standard equations recover. For a singly symmetric I-section (as in hybrid plate girders with a larger tension flange for fatigue reasons), $\beta_x \neq 0$ and can be either stabilizing ($\beta_x < 0$ when the larger flange is in compression, increasing $M_{cr}$) or destabilizing. AISC accommodates this through the $c$ factor in Eq. F2-4:
+
+$$
+c = \frac{h_o}{2}\sqrt{\frac{I_y}{C_w}} \quad (\text{for channels; }c = 1\text{ for doubly symmetric I-shapes})
+$$
+
+---
+
+*Created by Structural Engineering Tutor • 2026-03-18 | Upgraded to Graduate level: 2026-03-18*

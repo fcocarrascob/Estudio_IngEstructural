@@ -2,8 +2,8 @@
 
 **Subject area:** Steel Design (AISC 360-22)
 **Design standard / primary reference:** AISC 360-22 §G2; AISC Steel Construction Manual, 16th Ed., Part 3
-**Depth level:** Undergraduate — accessible
-**Estimated study time:** 55 minutes
+**Depth level:** Graduate — rigorous derivation
+**Estimated study time:** 110 minutes
 
 ---
 
@@ -346,4 +346,145 @@ $$\frac{h}{t_w} = 50.1 < 59.2 \quad \checkmark \quad \text{No stiffeners require
 
 ---
 
-*Created by Structural Engineering Tutor • 2026-03-18*
+---
+
+## 11. Graduate Extension: Plate Shear Buckling Theory & Tension-Field Action
+
+### 11.1 Plate Buckling in Shear: von Kármán Theory
+
+The AISC $C_{v1}$ coefficients derive from **plate buckling theory** (Timoshenko & Gere, *Theory of Elastic Stability*, Ch. 9). Consider a thin rectangular plate of height $h$, thickness $t_w$, and panel width $a$ (between stiffeners), simply supported on all four edges and subjected to **uniform shear stress $\tau$** on all edges.
+
+**Step 1 — Governing equilibrium equation.** The out-of-plane deflection $w(x, y)$ of the buckled plate satisfies the bi-harmonic equation modified by the in-plane membrane actions:
+
+$$
+D\nabla^4 w = t_w\left(N_x \frac{\partial^2 w}{\partial x^2} + 2N_{xy}\frac{\partial^2 w}{\partial x \partial y} + N_y\frac{\partial^2 w}{\partial y^2}\right)
+$$
+
+where $D = Et_w^3/[12(1-\nu^2)]$ is the plate flexural rigidity and $N_{xy} = \tau t_w$ is the in-plane shear flow. For pure shear loading, $N_x = N_y = 0$:
+
+$$
+D\nabla^4 w = 2 N_{xy} \frac{\partial^2 w}{\partial x \partial y}
+$$
+
+**Step 2 — Buckling mode shape.** Unlike plates under uniaxial compression (which buckle in half-sine modes), shear-loaded plates buckle in **diagonal corrugation modes** that are not separable in $x$ and $y$. The Ritz/Galerkin solution uses a double Fourier expansion:
+
+$$
+w = \sum_{m,n} A_{mn} \sin\frac{m\pi x}{a}\sin\frac{n\pi y}{h}
+$$
+
+Substituting into the buckling equation and requiring a non-trivial solution for the amplitude matrix $[A_{mn}]$ yields an eigenvalue problem. The minimum eigenvalue gives the **shear buckling coefficient**:
+
+$$
+k_v = \begin{cases}
+4.00 + 5.34/(a/h)^2 & a/h < 1 \\
+5.34 + 4.00/(a/h)^2 & a/h \geq 1
+\end{cases}
+\tag{Timoshenko 1936; AISC Eq. G2.1.1}
+$$
+
+For infinitely wide panels ($a/h \to \infty$) with no transverse stiffeners: $k_v \to 5.34$, which is the AISC value for unstiffened webs. Note that AISC simplifies both cases to $k_v = 5 + 5/(a/h)^2$, which is accurate to within 7% for practical aspect ratios $0.5 \leq a/h \leq 3.0$.
+
+**Step 3 — Critical shear stress.** The elastic shear buckling stress is:
+
+$$
+\tau_{cr} = k_v \frac{\pi^2 E}{12(1-\nu^2)}\left(\frac{t_w}{h}\right)^2
+$$
+
+Expressing as a fraction of the shear yield stress $\tau_y = 0.6 F_y$:
+
+$$
+\frac{\tau_{cr}}{\tau_y} = C_{v1} = \frac{k_v \pi^2 E}{12(1-\nu^2) \cdot 0.6 F_y} \cdot \frac{1}{(h/t_w)^2}
+$$
+
+With $\nu = 0.3$ and $\pi^2/[12(1-0.09) \times 0.6] \approx 1.51$:
+
+$$
+C_{v1} = \frac{1.51 k_v E}{F_y (h/t_w)^2} \qquad (\text{elastic shear buckling regime})
+\tag{AISC 360-22 \S G2.1.1(c)}
+$$
+
+This reproduces the AISC coefficient **1.51** exactly from first principles.
+
+---
+
+### 11.2 Transition to Inelastic Shear Buckling
+
+Analogous to the column curve, shear buckling has three regimes:
+
+**Shear-buckling slenderness parameter:**
+$$
+\lambda_s = \frac{h/t_w}{\sqrt{k_v E / F_y}}
+$$
+
+- $\lambda_s \leq 1.10$ ($h/t_w \leq 1.10\sqrt{k_vE/F_y}$): Web fully yields in shear before buckling → $C_{v1} = 1.0$
+- $1.10 < \lambda_s \leq 1.37$: Inelastic shear buckling (web partially yielded) → linear transition $C_{v1} = 1.10/(\lambda_s)$
+- $\lambda_s > 1.37$: Elastic buckling → $C_{v1} = 1.51/\lambda_s^2$
+
+The inelastic transition boundary at $\lambda_s = 1.10$ corresponds to $\tau_{inel} \approx 0.8\tau_y$, calibrated by Basler (1961) from plate girder test data. The 1.37 transition at $\tau_{cr} = 0.8\tau_y$ matches the point where elastic and inelastic curves intersect.
+
+---
+
+### 11.3 Tension-Field Action: Basler’s Model (1961)
+
+**Physical picture.** After elastic shear buckling at $\tau_{cr}$, the web forms **diagonal buckle waves**. These waves cannot carry additional compressive stress parallel to the buckles, but they can carry **tensile stress** perpendicular to the buckles. This is the **tension-field mechanism** — analogous to the diagonal tension members in a Pratt truss.
+
+**Step 1 — Basler’s simplified model.** Assume the flanges are **rigid in the vertical direction** (they provide the "chord" forces) but flexible in the transverse direction (no moment resistance). Under this assumption, the web can develop a diagonal tension field at angle $\theta$ to the horizontal.
+
+**Step 2 — Yield condition of the tension field.** The web carries:
+- Pre-buckling shear: $\tau_{cr}$ (carried equally by all elements)
+- Post-buckling tension field: additional stress $\sigma_t$ at angle $\theta$
+
+By Mohr’s circle for the buckled panel, the tension field stress $\sigma_t$ must satisfy von Mises yield:
+
+$$
+\sigma_t = F_y\sqrt{1 - 3\tau_{cr}^2/F_y^2 + \sqrt{3}\tau_{cr}/F_y} - \sqrt{3}\tau_{cr}
+$$
+
+**Step 3 — Optimal angle.** Basler maximized the shear capacity over $\theta$ and found $\tan^2\theta = t_w h / A_f$ (related to flange area $A_f$). For the simplified case of **rigid flanges** ($A_f \to \infty$), $\theta = 45°$.
+
+**Step 4 — AISC $C_{v2}$ formula.** The resulting shear capacity with tension-field action (AISC 360-22 §G2.2):
+
+$$
+V_n = 0.6 F_y A_w \left[C_{v2} + \frac{1 - C_{v2}}{1.15\sqrt{1+(a/h)^2}}\right]
+\tag{AISC Eq. G2-7}
+$$
+
+where $C_{v2}$ is the same-concept coefficient for §G2.2. The second term is Basler’s tension-field contribution, which increases with decreasing aspect ratio $a/h$ (more closely spaced stiffeners = shallower tension field angle = more efficient post-buckling reserve).
+
+---
+
+### 11.4 Cardiff Model: Accounting for Flange Flexibility (Rockey & Evans 1984)
+
+Basler’s model underestimates shear capacity because it ignores the contribution of the flanges to carrying the tension-field resultant. The **Cardiff Model** (Rockey et al. 1978–1984) treats the flanges as beams that develop plastic hinge mechanisms at four points as the web’s tension field pulls on them.
+
+The additional capacity from flange bending is:
+
+$$
+\Delta V_{flange} = \frac{2 M_{pf}}{c}\left(\frac{1}{a}\right)
+$$
+
+where $M_{pf} = F_y t_f b_f^2 / 4$ is the flange plastic moment capacity and $c$ is the horizontal distance between plastic hinges in the flange. Combining with Basler's tension-field term:
+
+$$
+V_n = A_w \tau_{cr} + A_w \sigma_t \sin\theta\cos\theta + \frac{2M_{pf}}{c}\left(\frac{1}{a}\right)
+$$
+
+The Cardiff model predicts test results for plate girders with thin, flexible flanges (typical of plate girder design) with better accuracy than Basler. **AISC 360-22 uses the simpler Basler approach** as a conservative lower bound, noting that the actual capacity may be 15–30% higher for girders with robust flanges.
+
+---
+
+### 11.5 Interaction of Shear and Bending in Plate Girders
+
+In regions of high moment *and* high shear (e.g., at interior supports of continuous girders, at transfer beam reactions), the web carries both bending- induced longitudinal stresses and shear stresses. The interaction is captured by the **$M$-$V$ interaction envelope** (AISC 360-22 §G2.9 for plate girders with slender webs):
+
+**For $h/t_w > 2.24\sqrt{E/F_y}$** (plate girder regime):
+
+$$
+\frac{M_u}{\phi_b M_n} + \frac{V_u}{0.625\,\phi_v V_n} \leq 1.375
+$$
+
+This interaction equation is a linearization of the elliptical interaction surface derived from panel yield-line analysis. In **standard beam design ($h/t_w \leq 2.24\sqrt{E/F_y}$)**, the interaction is negligible and AISC does not require a combined check — the provisions in §G2.1 and Chapter F are applied independently.
+
+---
+
+*Created by Structural Engineering Tutor • 2026-03-18 | Upgraded to Graduate level: 2026-03-18*

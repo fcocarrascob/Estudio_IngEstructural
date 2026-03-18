@@ -2,8 +2,8 @@
 
 **Subject area:** Steel Design (AISC 360-22)
 **Design standard / primary reference:** AISC 360-22 §D; AISC Steel Construction Manual, 16th Ed.
-**Depth level:** Undergraduate — accessible
-**Estimated study time:** 60 minutes
+**Depth level:** Graduate — rigorous derivation
+**Estimated study time:** 110 minutes
 
 ---
 
@@ -453,4 +453,146 @@ $$\frac{P_u}{\phi_t P_n} = \frac{320}{367.1} = 0.872 \quad (87.2\% \text{ utiliz
 
 ---
 
-*Created by Structural Engineering Tutor • 2026-03-18*
+---
+
+## 11. Graduate Extension: Fracture Mechanics, Shear Lag Theory & Net Path Rigorous Treatment
+
+### 11.1 Fracture Mechanics Background for Net-Section Rupture
+
+The net-section fracture limit state ($\phi_t = 0.75$, $P_n = F_u A_e$) is phenomenologically correct but disguises rich fracture mechanics. The underlying concept is **linear elastic fracture mechanics (LEFM)**. At a bolt hole, the stress concentration factor for an infinite plate is:
+
+$$
+K_t = 3 \qquad (\text{circular hole in uniaxial tension, Kirsch 1898})
+$$
+
+This implies a local stress $3\sigma_{nom}$ at the hole edge. However, in a ductile steel the high local stress triggers localized yielding that redistributes stress — preventing unstable fracture until the average net-section stress reaches $F_u$. The **effective stress intensity factor** at the hole in an elastic body (Inglis 1913) is:
+
+$$
+K_I = \sigma_{net}\sqrt{\pi a} \cdot F(a/W)
+$$
+
+where $a$ is the half-crack length at the hole edge, $W$ is the plate width, and $F(a/W)$ is a finite-width correction factor (typically 1.0–1.2 for typical $a/W$ ratios). Fracture initiates when $K_I \geq K_{Ic}$ (plane-strain fracture toughness). For structural steels at room temperature, $K_{Ic} \approx 50$–$200\,\text{MPa}\sqrt{\text{m}}$, which is large enough that LEFM fracture is prevented by ductile yielding — the member typically necks and tears rather than cleaving. **At low temperature or in thick plates (plane-strain conditions dominate)**, $K_{Ic}$ falls toward the lower-shelf Charpy $C_v$ values, and brittle fracture becomes possible at stresses below $F_u$. This is why AISC requires **notch-toughness** (CVN impact testing) for seismic moment-frame connections and fatigue-critical members.
+
+**J-integral and ductile fracture.** For large-scale yielding around a hole (typical of A992 steel), LEFM is inappropriate. Rice's **J-integral** (1968):
+
+$$
+J = \oint_\Gamma \left(W_0\,dy - \mathbf{T}\cdot\frac{\partial\mathbf{u}}{\partial x}\,ds\right)
+$$
+
+where $W_0$ is strain energy density, $\mathbf{T}$ is the traction vector, and $\mathbf{u}$ is the displacement vector on contour $\Gamma$, is a path-independent energy release rate applicable with plasticity. Fracture initiates when $J = J_{Ic}$ (the critical tearing modulus). For structural steels, $J_{Ic}$ is large enough that global net-section yielding precedes any initiation of ductile tearing — validating the $P_n = F_u A_e$ formula for normal service temperature conditions.
+
+---
+
+### 11.2 Rigorous Derivation of the Shear Lag Reduction Factor $U$
+
+The shear lag factor $U$ in AISC Table D3.1 originates from the elastic shear flow analysis of partially connected sections. Consider an angle with one leg connected (say, the outstanding (unconnected) leg has cross-sectional area $A_{out}$). Under axial load $P$, the connected leg transfers force immediately through the fasteners; the outstanding leg mobilizes through shear flow at the fillet radius.
+
+**Step 1 — Governing differential equation.** Consider a thin strip element $dx$ of the unconnected leg at distance $z$ from the connected leg. The axial force in the strip $dF(x)$ satisfies:
+
+$$
+\frac{d^2 u_{out}}{dx^2} - \frac{G t_{out}}{E A_{out}}(u_{out} - u_{conn}) = 0
+$$
+
+where $u_{out}$ and $u_{conn}$ are the axial displacements of the outstanding and connected portions respectively, $G$ is the shear modulus, and $t_{out}$ is the leg thickness.
+
+**Step 2 — Solution.** Defining the slip $\delta(x) = u_{conn} - u_{out}$, this becomes:
+
+$$
+\frac{d^2\delta}{dx^2} = \lambda^2 \delta, \qquad \lambda^2 = \frac{G t_{out}}{E A_{out}} \cdot \frac{A}{A_{out}}
+$$
+
+With boundary conditions $\delta(0) = 0$ (full engagement at the far connection end) and $\frac{d\delta}{dx}\big|_{L} = -P/(EA)$ (applied load at the near end), the solution is:
+
+$$
+\delta(x) = C_1 \cosh(\lambda x) + C_2 \sinh(\lambda x)
+$$
+
+**Step 3 — $\bar{x}$ interpretation.** The quantity $\bar{x}$ (distance from the connected plane to the centroid of the full unconnected section) measures the eccentricity of force transfer. Leibholz (1949) and Chesson & Munse (1963) showed that the average stress efficiency of the outstanding leg over length $L$ approaches:
+
+$$
+U = 1 - \frac{\bar{x}}{L}
+\tag{AISC Table D3.1, Case 2}
+$$
+
+as a first-order approximation valid when $L \gg \bar{x}$. The exact hyperbolic solution gives:
+
+$$
+U_{exact} = \frac{\tanh(\lambda L)}{\lambda L}
+$$
+
+For practical connection lengths ($L \geq 2\bar{x}$ to $3\bar{x}$), $U_{exact}$ and $1 - \bar{x}/L$ agree within 5%. AISC Table D3.1 tabulates specific values for W-shapes, single angles, and double angles based on this theory combined with test calibration.
+
+**Physical implication.** A longer connection (larger $L$) gives larger $U$ because the outstanding elements have more length over which to pick up load through shear flow. A fully connected section (all elements connected, $\bar{x} = 0$) achieves $U = 1.0$ exactly. **This is why AISC Table D3.1 provides $U = 1.0$ for any tension member connected through all its cross-sectional elements**: there is no eccentricity of the load path.
+
+---
+
+### 11.3 Staggered Bolt Path: Whitney's Rule Derivation
+
+For staggered fasteners, testing by Cochrane (1922) and Whitney (1929) showed that the net width for a diagonal path segment must account for the path obliquity. Consider two adjacent bolt holes at spacing $s$ (longitudinal) and gauge $g$ (transverse). The inclined path between them has length:
+
+$$
+d_{path} = \sqrt{s^2 + g^2}
+$$
+
+Using an **energy approach** (or equivalently, equating the work done by the net force on the projected areas), the effective width removed per diagonal segment is:
+
+$$
+\Delta w_{diag} = d_h - \frac{s^2}{4g}
+\tag{Whitney 1929; AISC 360-22 \S B4.3b}
+$$
+
+**Derivation by similar triangles (Cochrane 1922).** Consider the shear lag analogy: the inclined failure surface is treated as a vertical surface of net width $d_h$ minus a correction $s^2/(4g)$ that credits the zig-zag for its angle. Setting the failure stress equal in both paths:
+
+$$
+\frac{P}{t(w_n)_{diag}} = \frac{P}{t(w_n)_{straight}} \implies (w_n)_{diag} = d - d_h + \frac{s^2}{4g}
+$$
+
+Validation against test data by Davis & Woodruff (1941) showed the formula is accurate to within 5% for $0.3 \leq s/g \leq 1.5$. For very small $s/g$, the correction overestimates the staggered path capacity (the formula becomes unconservative); AISC Commentary §B4 notes that $s^2/(4g)$ should not be applied when $s < g/2$.
+
+---
+
+### 11.4 Probabilistic Basis for $\phi_t$ Values
+
+The lower resistance factor for **net-section fracture** ($\phi_t = 0.75$) versus **gross-section yielding** ($\phi_t = 0.90$) is fully justified by FOSM reliability analysis (see Topic 06-A §11.2). The key difference lies in the coefficient of variation of the resistance:
+
+| Limit state | COV of $R$ | $\beta_T$ | Computed $\phi$ |
+|-------------|-----------|-----------|----------------|
+| Gross yielding: $F_y A_g$ | $V_R = 0.126$ | 3.0 | $\approx 0.90$ |
+| Net fracture: $F_u A_e$ | $V_R = 0.185$ | 3.5 | $\approx 0.75$ |
+
+The larger $V_R$ for fracture arises because:
+
+1. $F_u$ has higher scatter than $F_y$ ($V_{F_u} \approx 0.11$ vs. $V_{F_y} \approx 0.10$, Galambos 1978)
+2. $A_e = U A_n$ adds shear lag factor uncertainty ($V_U \approx 0.12$)
+3. The net area $A_n$ depends on hole punching quality ($V_{A_n} \approx 0.08$)
+4. The higher target reliability index ($\beta_T = 3.5$) used for fracture limit states reflects the brittle, sudden nature of net-section rupture
+
+Combining in quadrature: $V_R = \sqrt{0.11^2 + 0.12^2 + 0.08^2} \approx 0.185$, confirming the table above.
+
+---
+
+### 11.5 Block Shear: Variational Mechanics Interpretation
+
+Block shear (AISC §J4.3) is often presented as a cookbook formula. The deeper mechanics: consider a bolt group with $n$ bolts in a $p \times q$ pattern attached to a gusset plate. The block of material defined by the bolt perimeter can fail by simultaneous:
+
+- **Shear yielding OR fracture** on the longitudinal planes (parallel to load)
+- **Tension fracture** on the transverse plane (perpendicular to load)
+
+This is a **mixed-mode failure**: Laboratory work by Hardash & Bjorhovde (1985) and Gross et al. (1995) showed that the governing equation:
+
+$$
+R_n = 0.6 F_u A_{nv} + U_{bs} F_u A_{nt}
+\tag{governs when shear fracture controls}
+$$
+$$
+R_n = 0.6 F_y A_{gv} + U_{bs} F_u A_{nt}
+\tag{governs when shear yielding controls with cap applied}
+$$
+
+can be derived from upper-bound plasticity theory by finding the kinematically admissible failure mechanism that minimizes the lateral resistance. The $0.6 F_u$ factor is the shear fracture stress ($\approx F_u/\sqrt{3}$ from von Mises, with $F_u/\sqrt{3} \approx 0.577 F_u \approx 0.60 F_u$ rounded).
+
+The $U_{bs} = 0.5$ case arises when the tension stress on the transverse plane is non-uniform (e.g., wide flanges where the web is connected but flanges carry less tension). The factor effectively reduces the tension rupture contribution to account for stress redistribution limitations before fracture.
+
+---
+
+*Created by Structural Engineering Tutor • 2026-03-18 | Upgraded to Graduate level: 2026-03-18*
